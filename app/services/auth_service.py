@@ -5,13 +5,13 @@ from datetime import timedelta
 from app.core.config import settings
 from app.models import User
 from app.schemas import Token, TokenData
-from app.repositories import user_crud
+from app.repositories import user_repo
 
 class AuthService:
     
     async def authenticate_user(self, db: AsyncSession, email: str, password: str) -> Token:
         
-        user_in_db = await user_crud.get_by_email(db=db, email=email)
+        user_in_db = await user_repo.get_by_email(db=db, email=email)
         
         if not user_in_db or not verify_password(plain_password=password, hashed_password=user_in_db.hashed_password):
             raise HTTPException(

@@ -112,23 +112,3 @@ async def update_article(
     
     article = await article_repo.update_article(db, article_id, article_in)
     return ArticleResponse.model_validate(article)
-
-
-async def delete_article(db: AsyncSession, article_id: UUID, user_id: UUID) -> dict:
-    # Check if article exists
-    existing_article = await article_repo.get_by_id(db, article_id)
-    if not existing_article:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Article not found"
-        )
-    
-    # Check if user is the author
-    if existing_article.author_id != user_id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not authorized to delete this article"
-        )
-    
-    await article_repo.delete_article(db, article_id)
-    return {"message": "Article deleted successfully"}

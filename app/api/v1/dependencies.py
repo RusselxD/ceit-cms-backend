@@ -2,72 +2,82 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
 from jose import jwt, JWTError
-from uuid import UUID
+from pydantic import ValidationError
 
+from app.repositories import user_repo
 from app.core.config import settings
 from app.core.database import get_db
 from app.schemas.auth import TokenData
 
-
 security = HTTPBearer()
 
 
-async def get_current_user(
+class CurrentUser:
+
+    """Holds the authenticated user's data from the token"""
+    def __init__(self, token_data: TokenData):
+        self.user_id = token_data.sub
+        self.first_name = token_data.first_name
+        self.last_name = token_data.last_name
+        self.role_name = token_data.role_name
+        self.permissions = token_data.permissions
+
+
+async def require_auth(
     credentials: HTTPAuthorizationCredentials = Depends(security),
     db: AsyncSession = Depends(get_db)
-) -> TokenData:
-    credentials_exception = HTTPException(
+) -> CurrentUser:
+
+    unauthorized_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
-    
+
+    token = credentials.credentials
+
     try:
-        token = credentials.credentials
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+        token_data = TokenData.model_validate(payload)
         
-        user_id: str = payload.get("sub")
-        first_name: str = payload.get("first_name")
-        last_name: str = payload.get("last_name")
-        role_name: str = payload.get("role_name")
-        permissions: list = payload.get("permissions", [])
-        
-        if user_id is None:
-            raise credentials_exception
-        
-        token_data = TokenData(
-            sub=UUID(user_id),
-            first_name=first_name,
-            last_name=last_name,
-            role_name=role_name,
-            permissions=permissions
-        )
-        
-    except JWTError:
-        raise credentials_exception
+    except (JWTError, ValidationError):
+        raise unauthorized_exception
     
-    return token_data
+    user_in_db = await user_repo.get_by_id(db, token_data.sub)
+    if user_in_db is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User not found"
+        )
+
+    return CurrentUser(token_data)
 
 
-def check_permission(required_permission: str):
-    """Dependency to check if user has required permission"""
-    async def permission_checker(current_user: TokenData = Depends(get_current_user)):
+def require_permission(required_permission: str):
+
+    async def _check(
+        current_user: CurrentUser = Depends(require_auth)
+    ):
         if required_permission not in current_user.permissions:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail=f"Permission '{required_permission}' required"
             )
         return current_user
-    return permission_checker
+    
+    return _check
 
 
-def check_role(required_role: str):
-    """Dependency to check if user has required role"""
-    async def role_checker(current_user: TokenData = Depends(get_current_user)):
+def require_role(required_role: str):
+
+    async def _check(
+        current_user: CurrentUser = Depends(require_auth)
+    ):
         if current_user.role_name != required_role:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail=f"Role '{required_role}' required"
             )
         return current_user
-    return role_checker
+    
+    return _check

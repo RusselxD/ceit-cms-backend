@@ -47,3 +47,27 @@ async def get_current_user(
         raise credentials_exception
     
     return token_data
+
+
+def check_permission(required_permission: str):
+    """Dependency to check if user has required permission"""
+    async def permission_checker(current_user: TokenData = Depends(get_current_user)):
+        if required_permission not in current_user.permissions:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Permission '{required_permission}' required"
+            )
+        return current_user
+    return permission_checker
+
+
+def check_role(required_role: str):
+    """Dependency to check if user has required role"""
+    async def role_checker(current_user: TokenData = Depends(get_current_user)):
+        if current_user.role_name != required_role:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Role '{required_role}' required"
+            )
+        return current_user
+    return role_checker

@@ -56,5 +56,15 @@ async def update_article(
     db: AsyncSession = Depends(get_db)
 ):
     """Update an article (author or admin with article.update permission)"""
-    return await article_service.update_article(db, article_id, article_in, current_user.user_id)
+    return await article_service.update_article(db, article_id, article_in, current_user)
+
+
+@router.delete("/{article_id}", status_code=status.HTTP_200_OK)
+async def delete_article(
+    article_id: UUID,
+    current_user: TokenData = Depends(check_permission("article.update")),
+    db: AsyncSession = Depends(get_db)
+):
+    """Delete an article (author or admin with article.update permission)"""
+    return await article_service.delete_article(db, article_id, current_user)
 

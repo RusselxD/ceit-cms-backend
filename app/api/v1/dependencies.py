@@ -1,34 +1,35 @@
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from sqlalchemy.ext.asyncio import AsyncSession
 from jose import jwt, JWTError
 from pydantic import ValidationError
 
 from app.repositories import user_repo
 from app.core.config import settings
-from app.core.database import get_db
+from app.core.authz import get_department_from_role, ensure_same_department_or_superadmin
 from app.schemas.auth import TokenData
+from app.services import auth_service
+
 
 security = HTTPBearer()
 
 
-class CurrentUser:
-
-    """Holds the authenticated user's data from the token"""
-    def __init__(self, token_data: TokenData):
-        self.user_id = token_data.sub
-        self.first_name = token_data.first_name
-        self.last_name = token_data.last_name
-        self.role_name = token_data.role_name
-        self.permissions = token_data.permissions
-
-
-async def require_auth(
+async def get_current_token(
     credentials: HTTPAuthorizationCredentials = Depends(security),
-    db: AsyncSession = Depends(get_db)
-) -> CurrentUser:
+) -> str:
+    token = credentials.credentials
+    if auth_service.is_access_token_revoked(token):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token has been revoked",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    return token
 
-    unauthorized_exception = HTTPException(
+
+async def get_current_user(
+    token: str = Depends(get_current_token),
+) -> TokenData:
+    credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},

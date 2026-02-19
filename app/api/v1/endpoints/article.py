@@ -57,7 +57,7 @@ async def update_article(
     db: AsyncSession = Depends(get_db)
 ):
     """Update an article (author or admin with article.update permission)"""
-    return await article_service.update_article(db, article_id, article_in, current_user.sub)
+    return await article_service.update_article(db, article_id, article_in, current_user)
 
 
 @router.delete("/{article_id}", status_code=status.HTTP_200_OK)
@@ -67,5 +67,5 @@ async def delete_article(
     db: AsyncSession = Depends(get_db)
 ):
     """Delete an article (author or admin with article.update permission)"""
-    return await article_service.delete_article(db, article_id, current_user.sub)
+    return await article_service.delete_article(db, article_id, current_user)
 

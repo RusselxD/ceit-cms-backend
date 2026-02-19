@@ -36,3 +36,7 @@ dmypy.json
 
 # Ruff
 .ruff_cache/
+
+# Tester
+*.sh
+TEST_RESULTS.md

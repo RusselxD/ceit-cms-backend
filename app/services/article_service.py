@@ -1,11 +1,12 @@
-from typing import List, Optional
+from typing import List
 from sqlalchemy.ext.asyncio import AsyncSession
 from uuid import UUID
 from fastapi import HTTPException, status
 
-from app.models.article import Article, ArticleStatus
 from app.schemas.article import ArticleCreate, ArticleUpdate, ArticleResponse, ArticleWithAuthor
+from app.api.v1.dependencies import CurrentUser
 from app.repositories.article import article_repo
+from app.core.authz import ensure_same_department_or_superadmin
 
 
 async def create_article(
@@ -93,7 +94,7 @@ async def update_article(
     db: AsyncSession, 
     article_id: UUID, 
     article_in: ArticleUpdate,
-    user_id: UUID
+    current_user: CurrentUser
 ) -> ArticleResponse:
     # Check if article exists
     existing_article = await article_repo.get_by_id(db, article_id)
@@ -103,12 +104,24 @@ async def update_article(
             detail="Article not found"
         )
     
-    # Check if user is the author
-    if existing_article.author_id != user_id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not authorized to update this article"
-        )
+    author_role_name = existing_article.author.role.name if existing_article.author and existing_article.author.role else None
+    ensure_same_department_or_superadmin(current_user, author_role_name)
     
     article = await article_repo.update_article(db, article_id, article_in)
     return ArticleResponse.model_validate(article)
+
+
+async def delete_article(db: AsyncSession, article_id: UUID, current_user: CurrentUser) -> dict:
+    # Check if article exists
+    existing_article = await article_repo.get_by_id(db, article_id)
+    if not existing_article:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Article not found"
+        )
+    
+    author_role_name = existing_article.author.role.name if existing_article.author and existing_article.author.role else None
+    ensure_same_department_or_superadmin(current_user=current_user, target_role_name=author_role_name)
+    
+    await article_repo.delete_article(db, article_id)
+    return {"message": "Article deleted successfully"}

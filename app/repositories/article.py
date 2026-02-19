@@ -5,6 +5,7 @@ from sqlalchemy.orm import selectinload
 from uuid import UUID
 
 from app.models.article import Article, ArticleStatus
+from app.models.user import User
 from app.schemas.article import ArticleCreate, ArticleUpdate
 from .base import CRUDBase
 
@@ -15,7 +16,7 @@ class ArticleRepository(CRUDBase[Article, ArticleCreate, ArticleUpdate]):
         result = await db.execute(
             select(Article)
             .filter(Article.id == article_id)
-            .options(selectinload(Article.author))
+            .options(selectinload(Article.author).selectinload(User.role))
             .execution_options(populate_existing=False)
         )
         return result.scalars().first()

@@ -3,6 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 from uuid import UUID
+from datetime import datetime, timezone
 
 from app.models.article import Article, ArticleStatus
 from app.models.user import User
@@ -89,8 +90,11 @@ class ArticleRepository(CRUDBase[Article, ArticleCreate, ArticleUpdate]):
         )
         article = result.scalars().first()
         if article:
-            await db.delete(article)
+            article.status = ArticleStatus.ARCHIVED
+            article.archived_at = datetime.now(timezone.utc)
+            db.add(article)
             await db.commit()
+            await db.refresh(article)
         return article
 
 

@@ -119,9 +119,19 @@ async def delete_article(db: AsyncSession, article_id: UUID, current_user: Curre
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Article not found"
         )
-    
-    author_role_name = existing_article.author.role.name if existing_article.author and existing_article.author.role else None
-    ensure_same_department_or_superadmin(current_user=current_user, target_role_name=author_role_name)
+
+    is_owner = existing_article.author_id == current_user.user_id
+    has_archive_permission = "article.archive" in current_user.permissions
+
+    if not has_archive_permission and not is_owner:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not enough permissions"
+        )
+
+    if has_archive_permission and not is_owner:
+        author_role_name = existing_article.author.role.name if existing_article.author and existing_article.author.role else None
+        ensure_same_department_or_superadmin(current_user=current_user, target_role_name=author_role_name)
     
     await article_repo.delete_article(db, article_id)
-    return {"message": "Article deleted successfully"}
+    return {"message": "Article archived successfully"}

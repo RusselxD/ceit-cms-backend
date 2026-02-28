@@ -8,3 +8,6 @@ python-jose==3.3.0
 passlib[argon2]==1.7.4
 python-multipart==0.0.20
 pydantic-settings==2.7.0
+greenlet==3.0.3
+cloudinary==1.36.0
+python-dotenv==1.0.0

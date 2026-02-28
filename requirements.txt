@@ -8,3 +8,4 @@ python-jose==3.3.0
 passlib[argon2]==1.7.4
 python-multipart==0.0.20
 pydantic-settings==2.7.0
+cloudinary==1.41.0

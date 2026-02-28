@@ -14,6 +14,12 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_DAYS: int = 7
     REFRESH_TOKEN_EXPIRE_DAYS: int = 30
 
+    # Cloudinary (optional until upload endpoints are used)
+    CLOUDINARY_CLOUD_NAME: str | None = None
+    CLOUDINARY_API_KEY: str | None = None
+    CLOUDINARY_API_SECRET: str | None = None
+    CLOUDINARY_FOLDER: str | None = None
+
     model_config = SettingsConfigDict(env_file='.env', extra='ignore')
 
 

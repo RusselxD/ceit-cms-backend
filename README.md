@@ -128,3 +128,39 @@ uvicorn app.main:app --reload
 The API will be available at `http://localhost:8000`
 
 API docs: `http://localhost:8000/docs`
+
+---
+
+## Cloudinary Uploads (Notes for Next Dev)
+
+### Environment variables
+
+Configured via Pydantic `Settings` in `app/core/config.py`.
+
+- `CLOUDINARY_CLOUD_NAME`
+- `CLOUDINARY_API_KEY`
+- `CLOUDINARY_API_SECRET`
+- `CLOUDINARY_FOLDER` (optional default folder/prefix for uploads)
+
+If Cloudinary vars are missing, the API will still start, but upload requests will return `500` with a clear “missing env vars” message.
+
+### Endpoint
+
+- `POST /api/v1/uploads/` (authenticated)
+	- Content-Type: `multipart/form-data`
+	- Form field: `file`
+	- Optional query params: `folder`, `public_id`
+
+Example:
+
+```bash
+curl -X POST "http://localhost:8000/api/v1/uploads/?folder=articles" \
+	-H "Authorization: Bearer <ACCESS_TOKEN>" \
+	-F "file=@./path/to/image.jpg"
+```
+
+### Implementation pointers
+
+- Upload logic lives in `app/services/upload_service.py`.
+- The Cloudinary SDK call is synchronous, so the route runs it via `run_in_threadpool` to avoid blocking the event loop.
+- Today the route requires authentication (`require_auth`). If you want permission-based access, swap to `require_permission("media.upload")` and add that permission to your seed/migrations.

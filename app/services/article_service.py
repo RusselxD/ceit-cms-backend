@@ -6,7 +6,7 @@ from fastapi import HTTPException, status
 from app.schemas.article import ArticleCreate, ArticleUpdate, ArticleResponse, ArticleWithAuthor
 from app.api.v1.dependencies import CurrentUser
 from app.repositories.article import article_repo
-from app.core.authz import ensure_same_department_or_superadmin
+from app.core.authz import ensure_owner_or_superadmin
 
 
 async def create_article(
@@ -31,6 +31,8 @@ async def get_article(db: AsyncSession, article_id: UUID) -> ArticleWithAuthor:
         author_id=article.author_id,
         title=article.title,
         body=article.body,
+        category=article.category,
+        like_count=article.like_count,
         image_path=article.image_path,
         image_alt_text=article.image_alt_text,
         status=article.status,
@@ -52,6 +54,8 @@ async def get_all_articles(db: AsyncSession) -> List[ArticleWithAuthor]:
             author_id=article.author_id,
             title=article.title,
             body=article.body,
+            category=article.category,
+            like_count=article.like_count,
             image_path=article.image_path,
             image_alt_text=article.image_alt_text,
             status=article.status,
@@ -75,6 +79,8 @@ async def get_all_articles_admin(db: AsyncSession) -> List[ArticleWithAuthor]:
             author_id=article.author_id,
             title=article.title,
             body=article.body,
+            category=article.category,
+            like_count=article.like_count,
             image_path=article.image_path,
             image_alt_text=article.image_alt_text,
             status=article.status,
@@ -98,6 +104,8 @@ async def get_my_articles(db: AsyncSession, author_id: UUID) -> List[ArticleWith
             author_id=article.author_id,
             title=article.title,
             body=article.body,
+            category=article.category,
+            like_count=article.like_count,
             image_path=article.image_path,
             image_alt_text=article.image_alt_text,
             status=article.status,
@@ -127,8 +135,7 @@ async def update_article(
             detail="Article not found"
         )
     
-    author_role_name = existing_article.author.role.name if existing_article.author and existing_article.author.role else None
-    ensure_same_department_or_superadmin(current_user, author_role_name)
+    ensure_owner_or_superadmin(current_user, existing_article.author_id)
     
     article = await article_repo.update_article(db, article_id, article_in)
     return ArticleResponse.model_validate(article)
@@ -143,18 +150,18 @@ async def delete_article(db: AsyncSession, article_id: UUID, current_user: Curre
             detail="Article not found"
         )
 
-    is_owner = existing_article.author_id == current_user.user_id
-    has_archive_permission = "article.archive" in current_user.permissions
-
-    if not has_archive_permission and not is_owner:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not enough permissions"
-        )
-
-    if has_archive_permission and not is_owner:
-        author_role_name = existing_article.author.role.name if existing_article.author and existing_article.author.role else None
-        ensure_same_department_or_superadmin(current_user=current_user, target_role_name=author_role_name)
+    ensure_owner_or_superadmin(current_user, existing_article.author_id)
     
     await article_repo.delete_article(db, article_id)
     return {"message": "Article archived successfully"}
+
+
+async def like_article(db: AsyncSession, article_id: UUID) -> ArticleResponse:
+    article = await article_repo.increment_like_count(db, article_id)
+    if not article:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Article not found"
+        )
+
+    return ArticleResponse.model_validate(article)

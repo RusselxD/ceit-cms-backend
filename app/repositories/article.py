@@ -113,5 +113,19 @@ class ArticleRepository(CRUDBase[Article, ArticleCreate, ArticleUpdate]):
             await db.refresh(article)
         return article
 
+    async def increment_like_count(self, db: AsyncSession, article_id: UUID) -> Optional[Article]:
+        result = await db.execute(
+            select(Article).filter(Article.id == article_id).with_for_update()
+        )
+        article = result.scalars().first()
+        if not article:
+            return None
+
+        article.like_count += 1
+        db.add(article)
+        await db.commit()
+        await db.refresh(article)
+        return article
+
 
 article_repo = ArticleRepository(Article)

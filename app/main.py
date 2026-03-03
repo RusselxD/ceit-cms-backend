@@ -2,8 +2,10 @@ import os
 import sys
 import asyncio
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy import text
 
 if __name__ == "__main__" and __package__ is None:
@@ -39,6 +41,11 @@ app = FastAPI(
 
 # Setup CORS middleware
 setup_cors(app)
+
+# Serve static files (uploaded assets)
+STATIC_DIR = Path(__file__).resolve().parent / "static"
+STATIC_DIR.mkdir(parents=True, exist_ok=True)
+app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
 # Include routers
 app.include_router(api_router, prefix="/api")

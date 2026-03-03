@@ -1,5 +1,6 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from functools import lru_cache
+from typing import Optional
 
 
 class Settings(BaseSettings):
@@ -10,6 +11,11 @@ class Settings(BaseSettings):
 
     SECRET_KEY: str
     ALGORITHM: str
+
+    CLOUDINARY_CLOUD_NAME: Optional[str] = None
+    CLOUDINARY_API_KEY: Optional[str] = None
+    CLOUDINARY_API_SECRET: Optional[str] = None
+    CLOUDINARY_FOLDER: str = "ceit-cms"
     
     ACCESS_TOKEN_EXPIRE_DAYS: int = 7
     REFRESH_TOKEN_EXPIRE_DAYS: int = 30

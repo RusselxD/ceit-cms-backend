@@ -1,5 +1,6 @@
 from fastapi import HTTPException, status
 from typing import TYPE_CHECKING
+from uuid import UUID
 
 if TYPE_CHECKING:
     from app.api.v1.dependencies import CurrentUser
@@ -24,4 +25,15 @@ def ensure_same_department_or_superadmin(current_user: "CurrentUser", target_rol
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Cross-department access is not allowed"
+        )
+
+
+def ensure_owner_or_superadmin(current_user: "CurrentUser", owner_id: UUID) -> None:
+    if current_user.role_name == "super_admin":
+        return
+
+    if current_user.user_id != owner_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You can only manage your own articles"
         )

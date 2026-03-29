@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -21,7 +21,13 @@ async def track_public_page_view(
     except Exception:
         payload = {}
 
-    path = str(payload.get("path") or request.headers.get("x-page-path") or "/")[:255]
+    path = str(payload.get("path") or request.headers.get("x-page-path") or "/")
+
+    if len(path) > 255:
+        raise HTTPException(status_code=400, detail="Path too long (max 255 chars)")
+    if not path.startswith("/"):
+        raise HTTPException(status_code=400, detail="Path must start with /")
+
     today = datetime.now(timezone.utc).date()
 
     await db.execute(

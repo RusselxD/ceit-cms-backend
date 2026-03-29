@@ -4,7 +4,10 @@ from sqlalchemy import text
 import ssl
 from .config import settings
 
+# Railway gives postgresql:// but asyncpg needs postgresql+asyncpg://
 database_url = settings.DATABASE_URL
+if database_url.startswith("postgresql://"):
+    database_url = database_url.replace("postgresql://", "postgresql+asyncpg://", 1)
 
 if database_url.startswith("postgresql+asyncpg"):
     connect_args = {

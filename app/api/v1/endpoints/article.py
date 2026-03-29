@@ -211,6 +211,9 @@ async def like_article(
     db: AsyncSession = Depends(get_db)
 ):
     """Increment article likes (public endpoint)"""
+    article = await article_service.get_article(db, article_id)
+    if not article:
+        raise HTTPException(status_code=404, detail="Article not found")
     return await article_service.like_article(db, article_id)
 
 

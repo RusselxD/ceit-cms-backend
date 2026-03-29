@@ -16,6 +16,15 @@ from app.api.v1.router import api_router
 from app.core.database import AsyncSessionLocal
 
 
+async def _run_seed() -> None:
+    """Run idempotent seeder on startup."""
+    from scripts.seed import seed_db
+    try:
+        await seed_db()
+    except Exception as exc:
+        print(f"Seeder warning: {exc}", flush=True)
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print("Checking database connection...", flush=True)
@@ -26,6 +35,7 @@ async def lifespan(app: FastAPI):
 
         await asyncio.wait_for(_check_db(), timeout=8)
         print("Database connection successful", flush=True)
+        await _run_seed()
     except asyncio.TimeoutError:
         print("Database connection failed: timeout", flush=True)
     except Exception as exc:

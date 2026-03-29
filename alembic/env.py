@@ -15,8 +15,11 @@ import app.models  # Import models to register them with Base.metadata
 # access to the values within the .ini file in use.
 config = context.config
 
-# Set the database URL from app settings
-config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
+# Set the database URL from app settings (convert to asyncpg if needed)
+_db_url = settings.DATABASE_URL
+if _db_url.startswith("postgresql://"):
+    _db_url = _db_url.replace("postgresql://", "postgresql+asyncpg://", 1)
+config.set_main_option("sqlalchemy.url", _db_url)
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.

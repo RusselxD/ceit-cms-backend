@@ -20,7 +20,7 @@ from app.models.site_content import SiteContent
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 #  SUPER ADMIN CREDENTIALS (edit or override via env)
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-ADMIN_EMAIL      = os.getenv("SEED_ADMIN_EMAIL", "admin@ceit.edu")
+ADMIN_EMAIL      = os.getenv("SEED_ADMIN_EMAIL")
 ADMIN_FIRST_NAME = os.getenv("SEED_ADMIN_FIRST_NAME", "Super")
 ADMIN_LAST_NAME  = os.getenv("SEED_ADMIN_LAST_NAME", "Admin")
 ADMIN_PASSWORD   = os.getenv("SEED_ADMIN_PASSWORD")
@@ -172,8 +172,8 @@ DEFAULT_NEWSLETTER = {
 
 async def seed_db():
     async with AsyncSessionLocal() as db:
-        if not ADMIN_PASSWORD:
-            print("ERROR: SEED_ADMIN_PASSWORD env var is required. Set it and restart.")
+        if not ADMIN_EMAIL or not ADMIN_PASSWORD:
+            print("ERROR: SEED_ADMIN_EMAIL and SEED_ADMIN_PASSWORD env vars are required. Set them and restart.")
             return
 
         try:

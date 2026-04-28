@@ -116,28 +116,6 @@ SITE_CONTENT = {
         "admission": "ADMISSION REQUIREMENTS\n\u2022 Grade 12 students who are expected to graduate at the end of the Academic Year 2025-2026.\n\u2022 Graduate of Senior High School of the previous Academic Year (2024-2025 and below) who have not enrolled in any colleges or universities.\n\u2022 College Transferee - the applicant must be an incoming zero year level student at the time of application for the PLV.\n\u2022 Alternative Learning System (ALS) or Philippine Education Placement Test (PEPT) completers whose eligibility is equivalent to a Senior High School Graduate as attested on the Certificate of Rating.\n\nPOLICIES & QUALIFICATIONS\n\u2022 The applicant must be a registered voter of Valenzuela City.\n\u2022 One (1) or both biological parents of the applicant must be a registered voter of Valenzuela City.\n\u2022 The applicant must be a Filipino citizen.\n\u2022 The applicant must comply with the Academic Residency Requirements.",
     },
     "administration": {
-        "boardOfRegents": {
-            "members": [
-                {"id": "1", "name": "City Mayor Weslie T. Gatchalian", "position": "Chairman", "photo": ""},
-                {"id": "2", "name": "Atty. Danilo L. Concepcion", "position": "Vice-Chairman", "photo": ""},
-                {"id": "3", "name": "Dr. Nede\u00f1a C. Torralba", "position": "PLV President", "photo": ""},
-                {"id": "4", "name": "Regent Lorena C. Natividad-Borja", "position": "Regent", "photo": ""},
-                {"id": "5", "name": "Regent Floro P. Alejo", "position": "Regent", "photo": ""},
-                {"id": "6", "name": "Regent Wilfredo E. Cabral", "position": "Regent", "photo": ""},
-                {"id": "7", "name": "Regent Angeleca SJ. Villena", "position": "Regent", "photo": ""},
-                {"id": "8", "name": "Atty. Allan Roullo Yap", "position": "Member", "photo": ""},
-                {"id": "9", "name": "Adelia E. Soriano", "position": "Board Secretary", "photo": ""},
-                {"id": "10", "name": "Ulysses Hermogenes C. Aguilar", "position": "Board Treasurer", "photo": ""},
-                {"id": "11", "name": "Elizabeth A. Chongco", "position": "Technical Working Group", "photo": ""},
-                {"id": "12", "name": "Pia Febes P. Aquino", "position": "Technical Working Group", "photo": ""},
-                {"id": "13", "name": "Flocerfida D. Villamar", "position": "Technical Working Group", "photo": ""},
-                {"id": "14", "name": "Erlindo C. Dionisio", "position": "Technical Working Group", "photo": ""},
-                {"id": "15", "name": "Leonora B. Katalbas", "position": "Technical Working Group", "photo": ""},
-                {"id": "16", "name": "Ana Maria C. Fernandez", "position": "Technical Working Group", "photo": ""},
-                {"id": "17", "name": "Carolina V. Santiago", "position": "Technical Working Group", "photo": ""},
-                {"id": "18", "name": "Lanilyn A. Dero\u00f1a", "position": "Technical Working Group", "photo": ""},
-            ],
-        },
         "organizationalChart": {
             "members": [
                 {"id": "1", "name": "Dr. Nedena C. Torralba", "position": "University President", "photo": "/pres_torralba.png"},
